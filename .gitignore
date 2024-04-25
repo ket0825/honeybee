@@ -11,3 +11,5 @@ venv/
 *.pyo
 *.json
 api_call/*
+*.zip
+*.exe
