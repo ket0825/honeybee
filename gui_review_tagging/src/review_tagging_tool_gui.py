@@ -115,6 +115,16 @@ def save_json_file():
     try:
         if data and file_path:
             save_to_our_topics()
+
+            # clean our_topics
+            for idx in range(len(our_topics)):
+                our_topics[idx] = [dict_topic for dict_topic in our_topics[idx] 
+                                  if (dict_topic['start_pos'] != -1 
+                                      and dict_topic['end_pos'] != -1 
+                                      and dict_topic['text'] != "" 
+                                      and dict_topic['topic'] != "")
+                                      ]                
+
             for idx, datum in enumerate(data):
                 datum['our_topics'] = our_topics[idx]
             with open(file_path, 'w', encoding='utf-8-sig') as f:
@@ -122,7 +132,7 @@ def save_json_file():
             msgbox.showinfo("저장성공",  "성공적으로 저장되었습니다!")
         else:
             msgbox.showerror("에러","데이터가 없습니다. 저장에 실패했어요")
-    except:
+    except Exception as e:
         msgbox.showerror("에러","파일 경로나 데이터가 없습니다")
 
 
@@ -187,7 +197,7 @@ def add_topic():
 
     topic_score = ttk.Combobox(new_frame, width=2, values=[str(i) for i in range(1, 6)], state="readonly")
     topic_score.bind('<MouseWheel>', lambda event: 'break')
-    topic_score.current(0)
+    topic_score.current(1)
     topic_score.pack(side=tk.LEFT, padx=5)
     topic_entry.append(topic_score)
 
@@ -199,7 +209,7 @@ def add_topic():
 
     sentiment_scale_combobox = ttk.Combobox(new_frame, width=2, values=[str(i) for i in range(1, 4)], state="readonly")
     sentiment_scale_combobox.bind('<MouseWheel>', lambda event: 'break')
-    sentiment_scale_combobox.current(2)
+    sentiment_scale_combobox.current(1)
     sentiment_scale_combobox.pack(side=tk.LEFT, padx=5)
     topic_entry.append(sentiment_scale_combobox)
 
@@ -227,7 +237,7 @@ def save_to_our_topics():
     global current_index, data, topic_entries, our_topics
     if len(topic_entries) > len(our_topics[current_index]):
         for _ in range(len(topic_entries)-len(our_topics[current_index])): # 추가된 topic만큼 더해줌
-            our_topics[current_index].append({'text': "", "topic": "", 'start_pos': 0, 'end_pos': 0, 'positive_yn': "", 'sentiment_scale':5})
+            our_topics[current_index].append({'text': "", "topic": "", 'start_pos': 0, 'end_pos': 0, 'positive_yn': "Y", 'sentiment_scale':3, 'topic_score':3})
 
     for topic_idx, topic_entry in enumerate(topic_entries):        
         for widget_order, widget in enumerate(topic_entry):
