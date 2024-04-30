@@ -3,6 +3,7 @@ Lib/
 Scripts/
 Include/
 pyvenv.cfg
+build/
 
 # Windows에서 생성되는 파일 및 디렉토리 무시
 *.pyc
@@ -13,3 +14,5 @@ venv/
 api_call/*
 *.zip
 *.exe
+
+*.spec

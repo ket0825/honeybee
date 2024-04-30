@@ -3,12 +3,42 @@ import tkinter as tk
 from tkinter import ttk, scrolledtext, filedialog
 import json
 
+# custom_widget
+from custom_widget.custom_checkbutton import CustomCheckbutton
+
 data_len = 0
 current_index = 0
 topic_entries = []
 topic_frames = []
 our_topics = []
 file_path = ""
+
+topic_candidates = ["만족도","제품만족도", "가격", "서비스만족도", "발송", "배송","환불","포장","AS","수리","환불","교환","문의",
+                    "키","키감","소리","키압","통울림","키캡","키축","스테빌라이저","윤활",
+                    "디자인","색상","재질","백라이트","외형","키보드각인",
+                    "휴대성","무게","사이즈",
+                    "제품구성","파우치","거치대","키스킨","건전지","설명서","키캡리무버", "키보드커버",
+                    "제품품질","마감","내구성",
+                    "성능","배터리","수명","호환성","지연율","소비전력",
+                    "편의성","손목","키배열","키보드높이",
+                    "연결방식","동글","블루투스","유선",
+                    "기능","다중페어링","접이식",
+                    ]
+
+
+
+def on_keyrelease(event, topic_combobox):
+    # 입력된 값 가져오기
+    value = event.widget.get()
+    # 입력된 값으로 시작하는 항목들로 콤보박스 업데이트
+    if value == '':
+        topic_combobox['values'] = topic_candidates
+    else:
+        data = []
+        for item in topic_candidates:
+            if value in item:
+                data.append(item)
+        topic_combobox['values'] = data
 
 
 def open_json_file():
@@ -27,12 +57,14 @@ def open_json_file():
         with open(file_path, 'r', encoding='utf-8-sig') as f:
             data = json.load(f)
         current_index = 0
-        our_topics = []
         data_len = len(data)
+        our_topics = [0]*data_len
         for idx, datum in enumerate(data):
-            our_topics.append([{'text': "", "topic": "", "topic_score":0, 'start_pos': 0, 'end_pos': 0, 'positive_yn': "", 'sentiment_scale':0}])
             if datum.get('our_topics'):
                 our_topics[idx] = datum['our_topics']
+            else:
+                our_topics[idx] = [{'text': "", "topic": "", "topic_score":2, 'start_pos': 0, 'end_pos': 0, 'positive_yn': True, 'sentiment_scale':2}]
+            
                 
         display_content(data[current_index])
     else:
@@ -69,43 +101,33 @@ def display_content(content_data):
         topic_text = tk.Text(new_frame, height=2, width=30)
         topic_text.config(font=('Times New Roman', 12))
         topic_text.insert(tk.END, topic_data['text'])
-        topic_text.pack(side=tk.LEFT, padx=5)
+        topic_text.pack(side=tk.LEFT, padx=10)
         topic_entry.append(topic_text)
 
-        topic_combobox = ttk.Combobox(new_frame, values=["만족도","제품만족도", "가격", "서비스만족도", "발송", "배송","환불",'포장',"AS","수리","환불","교환",'문의',
-                                                    "키","키감","소리","키압","통울림","키캡","키축","스테빌라이저","윤활",
-                                                    "디자인","색상","재질","백라이트","외형","키보드각인",
-                                                    "휴대성","무게","사이즈",
-                                                    "제품구성","파우치","거치대","키스킨","건전지","설명서","키캡리무버", "키보드커버",
-                                                    "제품품질","마감","내구성",
-                                                    "성능","배터리","수명","호환성","지연율","소비전력",
-                                                    "편의성","손목","키배열","키보드높이",
-                                                    "연결방식","동글","블루투스","유선",
-                                                    "기능","다중페어링","접이식",
-                                                    ], state="normal")
-        topic_combobox.bind('<MouseWheel>', lambda event: 'break')
+        topic_combobox = ttk.Combobox(new_frame, values=topic_candidates, state="normal")
+        topic_combobox.bind('<MouseWheel>', lambda event: 'break')        
         topic_combobox.set(topic_data['topic'])
-        topic_combobox.pack(side=tk.LEFT, padx=5)
+        # 콤보박스에 키 이벤트 바인딩
+        topic_combobox.bind('<KeyRelease>', lambda e: on_keyrelease(e, topic_combobox))
+        topic_combobox.pack(side=tk.LEFT, padx=10)
         topic_entry.append(topic_combobox)
         
         topic_score = ttk.Combobox(new_frame, width=2, values=[str(i) for i in range(1, 6)], state="readonly")
         topic_score.bind('<MouseWheel>', lambda event: 'break')
         topic_score.set(topic_data['topic_score'])
-        topic_score.pack(side=tk.LEFT, padx=5)
+        topic_score.pack(side=tk.LEFT, padx=10)
         topic_entry.append(topic_score)
 
-
-        positive_yn_combobox = ttk.Combobox(new_frame, width=2, values=["Y", "N"], state="readonly")
-        positive_yn_combobox.bind('<MouseWheel>', lambda event: 'break')
-        positive_yn_combobox.set(topic_data['positive_yn'])
-        positive_yn_combobox.pack(side=tk.LEFT, padx=5)
-        topic_entry.append(positive_yn_combobox)
+        positivte_yn_checkbtn = CustomCheckbutton(new_frame, text="Y/N", width=3)        
+        positivte_yn_checkbtn.set(topic_data['positive_yn'])
+        positivte_yn_checkbtn.pack(side=tk.LEFT, padx=10)
+        topic_entry.append(positivte_yn_checkbtn)
 
 
         sentiment_scale_combobox = ttk.Combobox(new_frame, width=2, values=[str(i) for i in range(1, 4)], state="readonly")
         sentiment_scale_combobox.bind('<MouseWheel>', lambda event: 'break')
         sentiment_scale_combobox.set(str(topic_data['sentiment_scale']))
-        sentiment_scale_combobox.pack(side=tk.LEFT, padx=5)
+        sentiment_scale_combobox.pack(side=tk.LEFT, padx=10)
         topic_entry.append(sentiment_scale_combobox)
 
         topic_entries.append(topic_entry)
@@ -115,16 +137,15 @@ def save_json_file():
     try:
         if data and file_path:
             save_to_our_topics()
-
-            # clean our_topics
-            for idx in range(len(our_topics)):
+             # clean our_topics
+            for idx, our_topic in enumerate(our_topics):
                 our_topics[idx] = [dict_topic for dict_topic in our_topics[idx] 
                                   if (dict_topic['start_pos'] != -1 
                                       and dict_topic['end_pos'] != -1 
                                       and dict_topic['text'] != "" 
                                       and dict_topic['topic'] != "")
                                       ]                
-
+                
             for idx, datum in enumerate(data):
                 datum['our_topics'] = our_topics[idx]
             with open(file_path, 'w', encoding='utf-8-sig') as f:
@@ -133,6 +154,7 @@ def save_json_file():
         else:
             msgbox.showerror("에러","데이터가 없습니다. 저장에 실패했어요")
     except Exception as e:
+        print(f"[ERROR] {e}")
         msgbox.showerror("에러","파일 경로나 데이터가 없습니다")
 
 
@@ -177,40 +199,30 @@ def add_topic():
 
     topic_text = tk.Text(new_frame, height=2, width=30)
     topic_text.config(font=('Times New Roman', 12))
-    topic_text.pack(side=tk.LEFT, padx=5)
+    topic_text.pack(side=tk.LEFT, padx=10)
     topic_entry.append(topic_text)
 
-    topic_combobox = ttk.Combobox(new_frame, values=["만족도","제품만족도", "가격", "서비스만족도", "발송", "배송","환불",'포장',"AS","수리","환불","교환",'문의',
-                                                    "키","키감","소리","키압","통울림","키캡","키축","스테빌라이저","윤활",
-                                                    "디자인","색상","재질","백라이트","외형","키보드각인",
-                                                    "휴대성","무게","사이즈",
-                                                    "제품구성","파우치","거치대","키스킨","건전지","설명서","키캡리무버", "키보드커버",
-                                                    "제품품질","마감","내구성",
-                                                    "성능","배터리","수명","호환성","지연율","소비전력",
-                                                    "편의성","손목","키배열","키보드높이",
-                                                    "연결방식","동글","블루투스","유선",
-                                                    "기능","다중페어링","접이식",
-                                                    ], state="normal")
+    topic_combobox = ttk.Combobox(new_frame, values=topic_candidates, state="normal")
     topic_combobox.bind('<MouseWheel>', lambda event: 'break')
-    topic_combobox.pack(side=tk.LEFT, padx=5)
+    topic_combobox.bind('<KeyRelease>', lambda e: on_keyrelease(e, topic_combobox))
+    topic_combobox.pack(side=tk.LEFT, padx=10)
     topic_entry.append(topic_combobox)
 
     topic_score = ttk.Combobox(new_frame, width=2, values=[str(i) for i in range(1, 6)], state="readonly")
     topic_score.bind('<MouseWheel>', lambda event: 'break')
     topic_score.current(1)
-    topic_score.pack(side=tk.LEFT, padx=5)
+    topic_score.pack(side=tk.LEFT, padx=10)
     topic_entry.append(topic_score)
 
-    positive_yn_combobox = ttk.Combobox(new_frame, width=2, values=["Y", "N"], state="readonly")
-    positive_yn_combobox.bind('<MouseWheel>', lambda event: 'break')
-    positive_yn_combobox.current(0)
-    positive_yn_combobox.pack(side=tk.LEFT, padx=5)
-    topic_entry.append(positive_yn_combobox)
+    positivte_yn_checkbtn = CustomCheckbutton(new_frame, text="Y/N", width=3)    
+    positivte_yn_checkbtn.set(True)
+    positivte_yn_checkbtn.pack(side=tk.LEFT, padx=10)
+    topic_entry.append(positivte_yn_checkbtn)
 
     sentiment_scale_combobox = ttk.Combobox(new_frame, width=2, values=[str(i) for i in range(1, 4)], state="readonly")
     sentiment_scale_combobox.bind('<MouseWheel>', lambda event: 'break')
     sentiment_scale_combobox.current(1)
-    sentiment_scale_combobox.pack(side=tk.LEFT, padx=5)
+    sentiment_scale_combobox.pack(side=tk.LEFT, padx=10)
     topic_entry.append(sentiment_scale_combobox)
 
     topic_entries.append(topic_entry)
@@ -237,14 +249,14 @@ def save_to_our_topics():
     global current_index, data, topic_entries, our_topics
     if len(topic_entries) > len(our_topics[current_index]):
         for _ in range(len(topic_entries)-len(our_topics[current_index])): # 추가된 topic만큼 더해줌
-            our_topics[current_index].append({'text': "", "topic": "", 'start_pos': 0, 'end_pos': 0, 'positive_yn': "Y", 'sentiment_scale':3, 'topic_score':3})
+            our_topics[current_index].append({'text': "", "topic": "", 'start_pos': 0, 'end_pos': 0, 'positive_yn': "", 'sentiment_scale':5})
 
     for topic_idx, topic_entry in enumerate(topic_entries):        
         for widget_order, widget in enumerate(topic_entry):
             if widget_order == 0:
                 # 얘만 text. rstrip으로 끝의 줄바꿈 제거.
                 our_topics[current_index][topic_idx]['text'] = widget.get('1.0', tk.END).rstrip() 
-                target_str = our_topics[current_index][topic_idx]['text']
+                target_str = our_topics[current_index][topic_idx]['text'].strip()
                 our_topics[current_index][topic_idx]['start_pos'] = data[current_index]['content'].find(target_str)
                 our_topics[current_index][topic_idx]['end_pos'] = data[current_index]['content'].find(target_str) + len(target_str)+1 if data[current_index]['content'].find(target_str) > -1 else -1
             elif widget_order == 1:
@@ -252,7 +264,8 @@ def save_to_our_topics():
             elif widget_order == 2:
                 our_topics[current_index][topic_idx]['topic_score'] = int(widget.get())
             elif widget_order == 3:
-                our_topics[current_index][topic_idx]['positive_yn'] = widget.get()
+                our_topics[current_index][topic_idx]['positive_yn'] = "Y" if widget.get() else "N"
+                
             elif widget_order == 4:
                 our_topics[current_index][topic_idx]['sentiment_scale'] = int(widget.get())
 
@@ -260,7 +273,7 @@ def save_to_our_topics():
 root = tk.Tk()
 root.geometry("850x700")
 root.resizable(True, True)
-root.title("JSON File Editor")
+root.title("Review Tagging Editor")
 
 # 경로 프레임.
 path_frame = tk.Frame(root)
@@ -286,19 +299,19 @@ text_frame.pack(fill=tk.BOTH, expand=True)
 
 # 'Open' 버튼
 open_btn = tk.Button(btn_frame, text="Open", command=open_json_file)
-open_btn.pack(side=tk.LEFT, padx=5)
+open_btn.pack(side=tk.LEFT, padx=10)
 
 # 'Save' 버튼
 save_btn = tk.Button(btn_frame, text="Save", command=save_json_file)
-save_btn.pack(side=tk.LEFT, padx=5)
+save_btn.pack(side=tk.LEFT, padx=10)
 
 # 'Next' 버튼
 next_btn = tk.Button(btn_frame, text="Next", command=next_content)
-next_btn.pack(side=tk.LEFT, padx=5)
+next_btn.pack(side=tk.LEFT, padx=10)
 
 # 'Previous' 버튼
 prev_btn = tk.Button(btn_frame, text="Previous", command=previous_content)
-prev_btn.pack(side=tk.LEFT, padx=5)
+prev_btn.pack(side=tk.LEFT, padx=10)
 
 # ScrolledText 위젯
 scrolled_text = scrolledtext.ScrolledText(text_frame, width=80, height=20)
@@ -344,7 +357,7 @@ topic_lbl.pack(side=tk.TOP, pady=5)
 
 # 'Add Topic' 버튼
 add_topic_btn = tk.Button(topic_frame, text="Add Topic", command=add_topic)
-add_topic_btn.pack(side=tk.LEFT, padx=5)
+add_topic_btn.pack(side=tk.LEFT, padx=10)
 
 # 'Delete Last Topic' 버튼
 delete_topic_btn = tk.Button(topic_frame, text="Delete Last Topic", command=delete_last_topic)
@@ -358,5 +371,6 @@ page_index_frame.pack(side=tk.BOTTOM, pady=5)
 page_index_lbl = tk.Label(page_index_frame)
 page_index_lbl.config(font=('Times New Roman', 14))
 page_index_lbl.pack(fill=tk.BOTH)
+
 
 root.mainloop()
