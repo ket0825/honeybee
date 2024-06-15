@@ -12,14 +12,6 @@ product_images/*
 *.jpg
 share/
 .idea/
-*.toc
-*.spec
-*.pkg
-*.html
-*.pyz
-*.exe
-*.txt
-env/
 
 # Windows에서 생성되는 파일 및 디렉토리 무시
 *.pyc
