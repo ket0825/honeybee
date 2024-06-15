@@ -1,4 +1,4 @@
-# Preview (Product review) project
+# Honeybee: subproject for COSMOS(CustOmer iS MOSt important)
 - Product review crawler and preprocessing with OCR and etc.
 
 - Combine with honeycomb (Flask server + SQLAlchemy) and MySQL DB.
